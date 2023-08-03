@@ -1,19 +1,29 @@
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { GoalInput } from './components/goalInput';
+import { GoalItem } from './components/goalItem';
 
 export default function App() {
-  const [enteredGoal, setEnteredGoal] = useState('');
   const [goals, setGoals] = useState([]);
-  const handleAddGoal = () => setGoals(currentGoals => [...currentGoals, enteredGoal]);
-
+  const [modalIsVisible, setModalIsVisible] = useState(false);
+  const handleAddGoal = enteredGoal => {
+    setGoals(currentGoals => [...currentGoals, { text: enteredGoal, key: Math.random().toString() }]);
+    endAddGoalHandler();
+  };
+  const handleDeleteGoal = key => setGoals(currentGoals => currentGoals.filter(goal => goal.key !== key));
+  const startAddGoalHandler = () => setModalIsVisible(true);
+  const endAddGoalHandler = () => setModalIsVisible(false);
   return (
     <View style={styles.container}>
-      <View style={styles.inputContainer}>
-        <TextInput style={styles.textInput} placeholder='Your Course Goal!' onChangeText={setEnteredGoal} />
-        <Button title='ADD GOAL' onPress={handleAddGoal} />
-      </View>
+      <Button title="Add Goal" onPress={startAddGoalHandler} color={'#5e0acc'} />
+      <GoalInput showModal={modalIsVisible} onAddGoal={handleAddGoal} onCancel={endAddGoalHandler} />
       <View style={styles.listContainer}>
-        {goals.map(goal => (<Text key={goal}>{goal}</Text>))}
+        <FlatList
+          data={goals}
+          renderItem={goal => {
+            return <GoalItem text={goal.item.text} id={goal.item.key} onDeleteItem={handleDeleteGoal} />;
+          }}
+        ></FlatList>
       </View>
     </View>
   );
@@ -25,23 +35,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 16
   },
-  inputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignContent: 'center',
-    paddingBottom: 30,
-    borderBottomWidth: 1,
-    borderBottomColor: 'black',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: 'black',
-    width: '70%',
-    padding: 8,
-    marginRight: 8,
-  },
   listContainer: {
-    flex: 7
+    flex: 5
   }
 });
